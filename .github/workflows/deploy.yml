@@ -18,8 +18,10 @@ jobs:
 
       - name: Deploy services
         env:
-          DOMAIN: ${{ secrets.DOMAIN }}
+          ROOT_DOMAIN: ${{ secrets.ROOT_DOMAIN }}
+          SUBDOMAINS: ${{ secrets.SUBDOMAINS }}
           EMAIL: ${{ secrets.EMAIL }}
+          CERT_NAME: ${{ secrets.CERT_NAME }}
         run: |
           # Navigate to your project directory on the server
           cd ${{ github.workspace }}
@@ -27,4 +29,5 @@ jobs:
           # Rebuild and restart your services with Docker Compose
           # Environment variables are passed from the 'env' context above
           # We explicitly specify `nginx` to ensure only the proxy server is started on deploy.
-          sudo -E docker compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans nginx
+          # Флаг -E обязателен для передачи env в sudo
+          sudo -E docker compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans

@@ -1,4 +1,16 @@
 services:
+  api-service:
+    image: httpd:2.4 # Using httpd as a placeholder
+    container_name: api-service
+    networks:
+      - net
+
+  webapp-service:
+    image: httpd:2.4 # Using httpd as a placeholder
+    container_name: webapp-service
+    networks:
+      - net
+
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -7,18 +19,27 @@ services:
       - '80:80'
       - '443:443'
     environment:
-      - DOMAIN
+      - ROOT_DOMAIN
+      - SUBDOMAINS
+      - CERT_NAME
     volumes:
-      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template
+      - ./nginx-entrypoint.sh:/nginx-entrypoint.sh
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
-    command: /bin/sh -c "envsubst '$$DOMAIN' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    command: ["/bin/sh", "/nginx-entrypoint.sh"]
+    depends_on:
+      - api-service
+      - webapp-service
     networks:
       - net
 
   certbot:
     image: certbot/certbot
     container_name: certbot
+    environment:
+      - ROOT_DOMAIN
+      - SUBDOMAINS
+      - EMAIL
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
