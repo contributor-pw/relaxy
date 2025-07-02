@@ -1,2 +1,4 @@
 data/certbot/
 .env
+create_repo_listing_bundle.sh
+repository_listing_bundle.md
