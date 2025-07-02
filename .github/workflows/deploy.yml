@@ -19,9 +19,9 @@ jobs:
       - name: Synchronize configuration to permanent directory
         run: |
           # Копируем свежие версии конфигов из временной папки (_work)
-          # в постоянную папку проекта (/opt/apps/relaxy).
+          # в постоянную папку проекта (/opt/actions-runner/apps/relaxy).
           # Флаг --delete удалит старые файлы, если вы их переименовали или удалили.
-          sudo rsync -av --delete ${{ github.workspace }}/ /opt/apps/relaxy/ --exclude 'data' --exclude '.git'
+          sudo rsync -av --delete ${{ github.workspace }}/ /opt/actions-runner/apps/relaxy/ --exclude 'data' --exclude '.git'
 
       - name: Deploy services from permanent directory
         env:
@@ -29,7 +29,7 @@ jobs:
           EMAIL: ${{ secrets.EMAIL }}
         run: |
           # Переходим в постоянную папку проекта
-          cd /opt/apps/relaxy
+          cd /opt/actions-runner/apps/relaxy
 
           # Запускаем docker-compose уже отсюда.
           sudo -E docker compose up -f docker-compose.yml -d --build --force-recreate --remove-orphans --wait nginx
