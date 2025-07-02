@@ -21,7 +21,7 @@ jobs:
           # Копируем свежие версии конфигов из временной папки (_work)
           # в постоянную папку проекта (/opt/apps/relaxy).
           # Флаг --delete удалит старые файлы, если вы их переименовали или удалили.
-          sudo rsync -av --delete ${{ github.workspace }}/ /opt/apps/relaxy/ --exclude 'data'
+          sudo rsync -av --delete ${{ github.workspace }}/ /opt/apps/relaxy/ --exclude 'data' --exclude '.git'
 
       - name: Deploy services from permanent directory
         env:
@@ -32,4 +32,4 @@ jobs:
           cd /opt/apps/relaxy
 
           # Запускаем docker-compose уже отсюда.
-          sudo -E docker compose up -d --build --force-recreate --remove-orphans --wait nginx
+          sudo -E docker compose up -f docker-compose.yml -d --build --force-recreate --remove-orphans --wait nginx
