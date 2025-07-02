@@ -32,4 +32,4 @@ jobs:
           cd /opt/actions-runner/apps/relaxy
 
           # Запускаем docker-compose уже отсюда.
-          sudo -E docker compose up -f docker-compose.yml -d --build --force-recreate --remove-orphans --wait nginx
+          sudo -E docker compose -f docker-compose.yml up  -d --build --force-recreate --remove-orphans --wait nginx
