@@ -27,4 +27,4 @@ jobs:
           # Rebuild and restart your services with Docker Compose
           # Environment variables are passed from the 'env' context above
           # We explicitly specify `nginx` to ensure only the proxy server is started on deploy.
-          sudo -E docker compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans nginx
+          sudo -E docker compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans --wait nginx
