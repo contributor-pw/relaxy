@@ -1,4 +1,19 @@
-data/certbot/
+# Ignore common Docker files
 .env
-create_repo_listing_bundle.sh
-repository_listing_bundle.md
+
+# Ignore logs
+*.log
+
+# Ignore Certbot data (if not managed by volumes)
+data/certbot/conf/
+data/certbot/www/
+
+# Ignore IDE and OS generated files
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+
+# GitHub Actions runner related files
+_work/
