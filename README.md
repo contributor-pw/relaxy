@@ -82,7 +82,7 @@ sudo crontab -e
 И добавьте следующую строку, заменив `/path/to/your/project/` на реальный путь к вашему проекту на сервере (например, `/opt/actions-runner/apps/relaxy`):
 
 ```crontab
-30 4 * * * cd /path/to/your/project/ && docker compose run --rm certbot renew && docker compose exec nginx nginx -s reload >> /var/log/cert-renew.log 2>&1
+30 4 * * * cd /path/to/your/project/ && docker compose run --rm certbot renew && docker compose exec nginx nginx -s reload >> /var/log/cron-cert-renew.log 2>&1
 ```
 
 Эта задача будет выполняться каждый день в 4:30 утра. Она делает три вещи:
@@ -122,6 +122,25 @@ sudo docker compose exec nginx openssl x509 -in /etc/letsencrypt/live/ВАШ_Д�
 Эту команду можно выполнить с любого компьютера. Замените `<ваш_домен>` на ваш домен:
 ```bash
 openssl s_client -connect ВАШ_ДОМЕН:443 -servername ВАШ_ДОМЕН 2>/dev/null | openssl x509 -noout -dates
+
+#### Проверка логов Certbot
+
+После добавления тома для логов Certbot в `docker-compose.yml`, вы можете просматривать детальные логи Certbot на хост-системе.
+
+1.  **Перейдите в директорию логов Certbot на хосте:**
+    ```bash
+    cd /path/to/your/project/data/certbot/logs
+    ```
+    (Замените `/path/to/your/project/` на реальный путь к вашему проекту).
+
+2.  **Просмотрите файл лога:**
+    ```bash
+    tail -f letsencrypt.log
+    ```
+    или
+    ```bash
+    less letsencrypt.log
+    ```
 ```
 
 ### Шаг 6: Обычный режим работы
