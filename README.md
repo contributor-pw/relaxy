@@ -141,7 +141,6 @@ openssl s_client -connect ВАШ_ДОМЕН:443 -servername ВАШ_ДОМЕН 2>
     ```bash
     less letsencrypt.log
     ```
-```
 
 ### Шаг 6: Обычный режим работы
 
