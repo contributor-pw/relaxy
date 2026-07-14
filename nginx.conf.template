@@ -57,10 +57,15 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-    # Статику, .htpasswd и basic auth держит сам апстрим-сервис site-2
+    # Docker-resolver: имя site-2 резолвится в рантайме запроса, а не при загрузке
+    # конфига. Иначе недоступность site-2 на старте уронила бы весь nginx, включая
+    # первый домен. Статику, .htpasswd и basic auth держит сам апстрим-сервис site-2
     # (отдельный контейнер в сети net). relaxy только терминирует TLS и проксирует.
+    resolver 127.0.0.11 valid=30s;
+    set $upstream_site_2 http://site-2;
+
     location / {
-        proxy_pass http://site-2;
+        proxy_pass $upstream_site_2;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
