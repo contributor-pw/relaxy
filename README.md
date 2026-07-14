@@ -41,9 +41,10 @@
 
 ### Шаг 1: Настройка GitHub Secrets
 
-В вашем репозитории на GitHub перейдите в `Settings` > `Secrets and variables` > `Actions` и создайте два секрета:
+В вашем репозитории на GitHub перейдите в `Settings` > `Secrets and variables` > `Actions` и создайте три секрета:
 
-- `DOMAIN`: Ваше доменное имя (например, `cloud.contributor.pw`).
+- `DOMAIN_1`: Основной домен (например, `domain1.example.pw`).
+- `DOMAIN_2`: Второй домен (например, `domain2.example.pw`).
 - `EMAIL`: Ваш email для уведомлений от Let's Encrypt.
 
 ### Шаг 2: Создание внешней сети Docker
@@ -151,3 +152,40 @@ openssl s_client -connect ВАШ_ДОМЕН:443 -servername ВАШ_ДОМЕН 2>
 1. **Настройте ваше приложение**: В `docker-compose.yml` вашего приложения подключите его к сети `net`.
 2. **Добавьте location в Nginx**: Откройте `nginx.conf.template` и добавьте новый `location`.
 3. **Сделайте `git push`**. GitHub Actions автоматически применит новую конфигурацию Nginx.
+
+## 🌐 Второй домен (`DOMAIN_2`)
+
+Второй домен раздаётся через тот же фронтовый nginx. relaxy остаётся чистым
+прокси: **статику, `.htpasswd` и basic auth держит отдельный апстрим-сервис
+`site-2`** (свой контейнер, подключённый к сети `net`), а фронтовый nginx только
+терминирует TLS и проксирует.
+
+- Server-блоки для `$DOMAIN_2` заданы в `nginx.conf.template`; envsubst
+  подставляет и `$DOMAIN_1`, и `$DOMAIN_2`.
+- Домен задаётся секретом `DOMAIN_2` (см. Шаг 1).
+- **Сертификат выпускается автоматически в CI** — шаг `Ensure second-domain TLS
+  certificate` в `deploy.yml` идемпотентен (`--keep-until-expiring`), поэтому
+  повторные пуши не задевают лимиты Let's Encrypt.
+- Обновление сертификата покрыто общим cron: `certbot renew` обновляет все домены.
+
+DNS: A-запись второго домена должна указывать на IP сервера.
+
+> **Важно про первый запуск (bootstrap).**
+> Авто-выпуск в CI работает только тогда, когда nginx **уже запущен** — он
+> отдаёт ACME-челлендж для `DOMAIN_2` через default `:80`-сервер. В нашем случае
+> так и есть: nginx уже обслуживает `DOMAIN_1`, поэтому для добавления второго
+> домена ручных действий не требуется.
+>
+> Но при **чистой установке с нуля сразу с двумя доменами** возникает «курица-яйцо»:
+> nginx не стартует, пока нет сертификатов для **обоих** доменов (каждый `:443`-блок
+> ссылается на свои cert-файлы), а раз nginx не запущен — CI не сможет пройти
+> ACME-челлендж. В этом случае оба сертификата нужно получить вручную **до** первого
+> старта nginx. Конфиг ссылается на раздельные каталоги (`live/$DOMAIN_1/` и
+> `live/$DOMAIN_2/`), поэтому нужны **два отдельных** вызова (не один с двумя `-d` —
+> тот создал бы только каталог первого домена):
+> ```bash
+> sudo docker compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot \
+>   --email ВАШ_EMAIL -d ВАШ_ДОМЕН_1 --agree-tos --no-eff-email
+> sudo docker compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot \
+>   --email ВАШ_EMAIL -d ВАШ_ДОМЕН_2 --agree-tos --no-eff-email
+> ```
