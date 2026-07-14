@@ -23,9 +23,28 @@ jobs:
           # Флаг --delete удалит старые файлы, если вы их переименовали или удалили.
           sudo rsync -av --delete ${{ github.workspace }}/ /opt/actions-runner/apps/relaxy/ --exclude 'data' --exclude '.git'
 
+      - name: Ensure second-domain TLS certificate
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          DOMAIN_2: ${{ secrets.DOMAIN_2 }}
+        run: |
+          # Переходим в постоянную папку проекта
+          cd /opt/actions-runner/apps/relaxy
+
+          # Идемпотентный выпуск сертификата для DOMAIN_2 ДО пересоздания nginx:
+          # уже работающий nginx отдаёт acme-challenge для любого хоста через
+          # default :80-сервер, поэтому challenge проходит без блоков DOMAIN_2.
+          # --keep-until-expiring делает повторные пуши no-op (лимиты LE не задеваем),
+          # но гарантирует наличие cert-файлов до того, как :443-блок их потребует.
+          sudo -E docker compose -f docker-compose.yml run --rm certbot \
+            certonly --webroot --webroot-path=/var/www/certbot \
+            --email "$EMAIL" -d "$DOMAIN_2" \
+            --agree-tos --no-eff-email --keep-until-expiring --non-interactive
+
       - name: Deploy services from permanent directory
         env:
-          DOMAIN: ${{ secrets.DOMAIN }}
+          DOMAIN_1: ${{ secrets.DOMAIN_1 }}
+          DOMAIN_2: ${{ secrets.DOMAIN_2 }}
           EMAIL: ${{ secrets.EMAIL }}
         run: |
           # Переходим в постоянную папку проекта
