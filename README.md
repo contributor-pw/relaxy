@@ -41,7 +41,7 @@
 
 ### Шаг 1: Настройка GitHub Secrets
 
-В вашем репозитории на GitHub перейдите в `Settings` > `Secrets and variables` > `Actions` и создайте два секрета:
+В вашем репозитории на GitHub перейдите в `Settings` > `Secrets and variables` > `Actions` и создайте три секрета:
 
 - `DOMAIN_1`: Основной домен (например, `domain1.example.pw`).
 - `DOMAIN_2`: Второй домен (например, `domain2.example.pw`).
