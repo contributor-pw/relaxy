@@ -17,3 +17,7 @@ data/certbot/www/
 
 # GitHub Actions runner related files
 _work/
+
+# Локальная память агента: держит реальные значения (домены и т.п.),
+# не должна попадать в публичный репозиторий -- как .env
+.claude/memory/
